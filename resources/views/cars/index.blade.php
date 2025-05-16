@@ -11,10 +11,12 @@
 
     @foreach($cars as $car)
         <div class="car">
-            <h2>{{ $car->name }} - {{ $car->brand }}</h2>
+            <h2>{{ $car->name }} </h2>
+             <p>Brand: {{ $car->company }} </p>
             <p>Year: {{ $car->year }}</p>
             <p>Price: ${{ number_format($car->price, 2) }}</p>
            <p> {{ $car->type }} </p>
+            <p> {{ $car->company }} </p>
            <p> {{ $car->explai }} </p>
             @if($car->image)
                 <img src="{{ asset('storage/' . $car->image) }}" width="200">
