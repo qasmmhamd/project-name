@@ -1,33 +1,25 @@
-# 1. استخدم صورة PHP الرسمية
-FROM php:8.2-cli
+FROM php:8.2-fpm
 
-# 2. تثبيت الحزم المطلوبة للـ Laravel
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    unzip \
-    git \
-    curl \
-    libzip-dev \
-    libonig-dev \
-    libxml2-dev \
-    libpq-dev \
-    zip \
-    && docker-php-ext-install pdo pdo_mysql zip
+    git curl zip unzip libpq-dev libonig-dev libxml2-dev libzip-dev \
+    && docker-php-ext-install pdo pdo_mysql pdo_pgsql mbstring zip exif pcntl
 
-# 3. تثبيت Composer
-RUN curl -sS https://getcomposer.org/installer | php && \
-    mv composer.phar /usr/local/bin/composer
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# 4. تعيين مجلد العمل داخل الحاوية
-WORKDIR /app
+# Set working directory
+WORKDIR /var/www
 
-# 5. نسخ الملفات من جهازك إلى الحاوية
-COPY . .
+# Copy existing application
+COPY . /var/www
 
-# 6. تثبيت الحزم باستخدام Composer
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+# Install PHP dependencies
+RUN composer install --optimize-autoloader --no-dev
 
-# 7. إعداد Laravel
-RUN php artisan config:cache
+# Set Laravel permissions
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-# 8. أمر التشغيل النهائي
-CMD php artisan serve --host=0.0.0.0 --port=$PORT
+EXPOSE 8000
+
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
